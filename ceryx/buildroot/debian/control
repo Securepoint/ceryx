@@ -1,0 +1,13 @@
+Source:ceryx
+Section: unknown
+Priority: optional
+Maintainer: Erik Anders, Securepoint GmbH <erik.anders@securepoint.de>
+Build-Depends: debhelper
+Homepage: https://github.com/Securepoint/ceryx
+Description: ceryx plugin for openresty
+
+Package: ceryx
+Architecture: amd64
+Depends: openresty
+Homepage: https://github.com/Securepoint/ceryx
+Description: ceryx plugin for openresty

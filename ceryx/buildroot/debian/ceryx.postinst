@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        # add commands that must be executed after install here
+        openresty -s reload
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0
