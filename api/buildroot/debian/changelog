@@ -1,34 +1,10 @@
-ceryx-api (0.7.0-5-gd360b8f) buster; urgency=medium
+ceryx-api (0.7.1) buster; urgency=medium
 
   * build
 
- -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 11:53:43 +0000
+ -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 18:29:56 +0000
 
-ceryx-api (0.7.0-5-gd360b8f) buster; urgency=medium
-
-  * build
-
- -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 11:49:27 +0000
-
-ceryx-api (0.7.0-5-gd360b8f) buster; urgency=medium
-
-  * build
-
- -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 11:46:59 +0000
-
-ceryx-api (0.7.0-5-gd360b8f) buster; urgency=medium
-
-  * build
-
- -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 11:44:14 +0000
-
-ceryx-api (0.7.0-5-gd360b8f) buster; urgency=medium
-
-  * build
-
- -- Vagrant Default User <vagrant@buster.localdomain>  Wed, 13 Jan 2021 11:42:36 +0000
-
-ceryx-api (0.0.0) unstable; urgency=medium
+ceryx-api (0.7.0) unstable; urgency=medium
 
   * Initial Release.
 
