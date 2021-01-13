@@ -33,7 +33,12 @@ function setUpstreamHeaders(source, target, route)
     local cookie, flags = cache:get(host .. ":cookie")
 
     if cookie == nil then
-        local cookie, flags = redisClient:hget(upstreamHeadersKey, "cookie")
+        cookie, flags = redisClient:hget(upstreamHeadersKey, "cookie")
+        if cookie == ngx.null then
+            cookie = nil
+        else
+            ngx.log(ngx.DEBUG, "Cookie from redis: " .. cookie)
+        end
         cache:set(host .. ":cookie", cookie, 5)
     end
 
