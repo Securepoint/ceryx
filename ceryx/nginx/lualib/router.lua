@@ -9,25 +9,7 @@ local cache = ngx.shared.ceryx
 
 local is_not_https = (ngx.var.scheme ~= "https")
 
-function formatTarget(target)
-    target = utils.ensure_protocol(target)
-    target = utils.ensure_no_trailing_slash(target)
-
-    return target .. ngx.var.request_uri
-end
-
-function redirect(source, target)
-    ngx.log(ngx.INFO, "Redirecting request for " .. source .. " to " .. target .. ".")
-    return ngx.redirect(target, ngx.HTTP_MOVED_PERMANENTLY)
-end
-
-function proxy(source, target, route)
-    setUpstreamHeaders(source, target, route)
-    ngx.var.target = target
-    ngx.log(ngx.INFO, "Proxying request for " .. source .. " to " .. target .. ".")
-end
-
-function setUpstreamHeaders(source, target, route)
+local function setUpstreamHeaders(source, target, route)
     ngx.log(ngx.DEBUG, "Setting upstream headers for " .. source .. " to " .. target .. ".")
     local upstreamHeadersKey = routes.getUpstreamHeadersKeyForSource(source)
     local cookie, flags = cache:get(host .. ":cookie")
@@ -50,7 +32,25 @@ function setUpstreamHeaders(source, target, route)
     ngx.req.set_header("Cookie", cookie)
 end
 
-function routeRequest(source, target, mode, route)
+local function formatTarget(target)
+    target = utils.ensure_protocol(target)
+    target = utils.ensure_no_trailing_slash(target)
+
+    return target .. ngx.var.request_uri
+end
+
+local function redirect(source, target)
+    ngx.log(ngx.INFO, "Redirecting request for " .. source .. " to " .. target .. ".")
+    return ngx.redirect(target, ngx.HTTP_MOVED_PERMANENTLY)
+end
+
+local function proxy(source, target, route)
+    setUpstreamHeaders(source, target, route)
+    ngx.var.target = target
+    ngx.log(ngx.INFO, "Proxying request for " .. source .. " to " .. target .. ".")
+end
+
+local function routeRequest(source, target, mode, route)
     ngx.log(ngx.DEBUG, "Received " .. mode .. " routing request from " .. source .. " to " .. target)
 
     target = formatTarget(target)

@@ -2,23 +2,23 @@ local redis = require "ceryx.redis"
 
 local exports = {}
 
-function getRouteKeyForSource(source)
+local function getRouteKeyForSource(source)
     return redis.prefix .. ":routes:" .. source
 end
 
-function getSettingsKeyForSource(source)
+local function getSettingsKeyForSource(source)
     return redis.prefix .. ":settings:" .. source
 end
 
-function getUpstreamHeadersKeyForSource(source)
+local function getUpstreamHeadersKeyForSource(source)
     return redis.prefix .. ":upstream-headers:" .. source
 end
 
-function targetIsInValid(target)
+local function targetIsInValid(target)
     return not target or target == ngx.null
 end
 
-function getTargetForSource(source, redisClient)
+local function getTargetForSource(source, redisClient)
     -- Construct Redis key and then
     -- try to get target for host
     local key = getRouteKeyForSource(source)
@@ -41,7 +41,7 @@ function getTargetForSource(source, redisClient)
     return target
 end
 
-function getModeForSource(source, redisClient)
+local function getModeForSource(source, redisClient)
     ngx.log(ngx.DEBUG, "Get routing mode for " .. source .. ".")
     local settings_key = getSettingsKeyForSource(source)
     local mode, _ = redisClient:hget(settings_key, "mode")
@@ -53,7 +53,7 @@ function getModeForSource(source, redisClient)
     return mode
 end
 
-function getRouteForSource(source)
+local function getRouteForSource(source)
     local _
     local route = {}
     local cache = ngx.shared.ceryx

@@ -1,18 +1,18 @@
 local exports = {}
 
-function starts_with(subject, substring)
+local function starts_with(subject, substring)
     return subject:sub(1, #substring) == substring
 end
 
-function ends_with(subject, substring)
+local function ends_with(subject, substring)
     return subject:sub(-(#substring)) == substring
 end
 
-function starts_with_protocol(target)
+local function starts_with_protocol(target)
     return starts_with(target, "http://") or starts_with(target, "https://")
 end
 
-function has_trailing_slash(target)
+local function has_trailing_slash(target)
     return ends_with(target, "/")
 end
 
