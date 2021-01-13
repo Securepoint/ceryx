@@ -1,5 +1,6 @@
 import responder
 
+from ceryx import settings
 from ceryx.db import RedisClient
 from ceryx.exceptions import NotFound
 
@@ -8,13 +9,13 @@ api = responder.API()
 client = RedisClient.from_config()
 
 
-@api.route(default=True)
+@api.route("/")
 def default(req, resp):
     if not req.url.path.endswith("/"):
         api.redirect(resp, f"{req.url.path}/")
 
 
-@api.route("/api/routes/")
+@api.route("/api/routes")
 class RouteListView:
     async def on_get(self, req, resp):
         resp.media = [dict(route) for route in client.list_routes()]
@@ -26,7 +27,7 @@ class RouteListView:
         resp.media = dict(route)
 
 
-@api.route("/api/routes/{host}/")
+@api.route("/api/routes/{host}")
 class RouteDetailView:
     async def on_get(self, req, resp, *, host: str):
         try:
@@ -40,11 +41,11 @@ class RouteDetailView:
         data = await req.media()
         route = client.update_route(host, data)
         resp.media = dict(route)
-    
+
     async def on_delete(self, req, resp, *, host:str):
         client.delete_route(host)
         resp.status_code = api.status_codes.HTTP_204
 
 
 if __name__ == '__main__':
-    api.run()
+    api.run(port=settings.API_BIND_PORT, address=settings.API_BIND_HOST)
