@@ -21,12 +21,31 @@ function redirect(source, target)
     return ngx.redirect(target, ngx.HTTP_MOVED_PERMANENTLY)
 end
 
-function proxy(source, target)
+function proxy(source, target, route)
+    setUpstreamHeaders(source, target, route)
     ngx.var.target = target
     ngx.log(ngx.INFO, "Proxying request for " .. source .. " to " .. target .. ".")
 end
 
-function routeRequest(source, target, mode)
+function setUpstreamHeaders(source, target, route)
+    ngx.log(ngx.DEBUG, "Setting upstream headers for " .. source .. " to " .. target .. ".")
+    local upstreamHeadersKey = routes.getUpstreamHeadersKeyForSource(source)
+    local cookie, flags = cache:get(host .. ":cookie")
+
+    if cookie == nil then
+        local cookie, flags = redisClient:hget(upstreamHeadersKey, "cookie")
+        cache:set(host .. ":cookie", cookie, 5)
+    end
+
+    if cookie == nil then
+        return
+    end
+
+    ngx.log(ngx.DEBUG, "Setting cookie for " .. source .. " to " .. target .. ": " .. cookie)
+    ngx.req.set_header("Cookie", cookie)
+end
+
+function routeRequest(source, target, mode, route)
     ngx.log(ngx.DEBUG, "Received " .. mode .. " routing request from " .. source .. " to " .. target)
 
     target = formatTarget(target)
@@ -35,7 +54,7 @@ function routeRequest(source, target, mode)
         return redirect(source, target)
     end
 
-    return proxy(source, target)
+    return proxy(source, target, route)
 end
 
 if is_not_https then
@@ -62,4 +81,4 @@ if route == nil then
 end
 
 -- Save found key to local cache for 5 seconds
-routeRequest(host, route.target, route.mode)
+routeRequest(host, route.target, route.mode, route)

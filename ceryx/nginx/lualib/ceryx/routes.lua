@@ -10,6 +10,10 @@ function getSettingsKeyForSource(source)
     return redis.prefix .. ":settings:" .. source
 end
 
+function getUpstreamHeadersKeyForSource(source)
+    return redis.prefix .. ":upstream-headers:" .. source
+end
+
 function targetIsInValid(target)
     return not target or target == ngx.null
 end
@@ -79,6 +83,7 @@ function getRouteForSource(source)
 end
 
 exports.getSettingsKeyForSource = getSettingsKeyForSource
+exports.getUpstreamHeadersKeyForSource = getUpstreamHeadersKeyForSource
 exports.getRouteForSource = getRouteForSource
 exports.getTargetForSource = getTargetForSource
 

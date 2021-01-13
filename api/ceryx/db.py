@@ -5,7 +5,6 @@ import redis
 
 from ceryx import exceptions, schemas, settings
 
-
 def _str(subject):
     return subject.decode("utf-8") if type(subject) == bytes else str(bytes)
 
@@ -29,7 +28,7 @@ class RedisClient:
     def __init__(self, host, port, password, db, prefix, timeout):
         self.client = redis.StrictRedis(host=host, port=port, password=password, db=db, socket_timeout=timeout, socket_connect_timeout=timeout)
         self.prefix = prefix
-    
+
     def _prefixed_key(self, key):
         return f"{self.prefix}:{key}"
 
@@ -39,54 +38,81 @@ class RedisClient:
     def _settings_key(self, source):
         return self._prefixed_key(f"settings:{source}")
 
+    def _upstream_headers_key(self, source):
+        return self._prefixed_key(f"upstream-headers:{source}")
+
     def _delete_target(self, host):
         key = self._route_key(host)
         self.client.delete(key)
-    
+
     def _delete_settings(self, host):
         key = self._settings_key(host)
+        self.client.delete(key)
+
+    def _delete_upstream_headers(self, host):
+        key = self._upstream_headers_key(host)
         self.client.delete(key)
 
     def _lookup_target(self, host, raise_exception=False):
         key = self._route_key(host)
         target = self.client.get(key)
-        
+
         if target is None and raise_exception:
             raise exceptions.NotFound("Route not found.")
-        
+
         return target
 
     def _lookup_settings(self, host):
         key = self._settings_key(host)
         return self.client.hgetall(key)
 
+    def _lookup_upstream_headers(self, host):
+        key = self._upstream_headers_key(host)
+        return self.client.hgetall(key) or []
+
     def lookup_hosts(self, pattern="*"):
         lookup_pattern = self._route_key(pattern)
         left_padding = len(lookup_pattern) - 1
         keys = self.client.keys(lookup_pattern)
         return [_str(key)[left_padding:] for key in keys]
-    
-    def _set_target(self, host, target):
+
+    def _set_target(self, host, target, ttl = 0):
         key = self._route_key(host)
         self.client.set(key, target)
+        if (ttl):
+            self.client.expire(key, ttl)
 
-    def _set_settings(self, host, settings):
+    def _set_settings(self, host, settings, ttl = 0):
         key = self._settings_key(host)
         self.client.hmset(key, settings)
-    
+        if (ttl):
+            self.client.expire(key, ttl)
+
+    def _set_upstream_headers(self, host, headers, ttl = 0):
+        if (not len(headers)):
+            return
+
+        key = self._upstream_headers_key(host)
+        self.client.hmset(key, headers)
+        if (ttl):
+            self.client.expire(key, ttl)
+
     def _set_route(self, route: schemas.Route):
         redis_data = route.to_redis()
         self._set_target(route.source, redis_data["target"])
         self._set_settings(route.source, redis_data["settings"])
+        self._set_upstream_headers(route.source, redis_data["upstream_headers"])
         return route
-    
+
     def get_route(self, host):
         target = self._lookup_target(host, raise_exception=True)
         settings = self._lookup_settings(host)
+        upstream_headers = self._lookup_upstream_headers(host)
         route = schemas.Route.from_redis({
             "source": host,
             "target": target,
-            "settings": settings
+            "settings": settings,
+            "upstream_headers": upstream_headers
         })
         return route
 
@@ -94,11 +120,11 @@ class RedisClient:
         hosts = self.lookup_hosts()
         routes = [self.get_route(host) for host in hosts]
         return routes
-    
+
     def create_route(self, data: dict):
         route = schemas.Route.validate(data)
         return self._set_route(route)
-    
+
     def update_route(self, host: str, data: dict):
         data["source"] = host
         route = schemas.Route.validate(data)

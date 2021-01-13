@@ -26,7 +26,7 @@ def ensure_string(value):
 def value_to_redis(field, value):
     if isinstance(field, typesystem.Boolean):
         return boolean_to_redis(value)
-    
+
     if isinstance(field, typesystem.Reference):
         return field.target.validate(value).to_redis()
 
@@ -36,7 +36,7 @@ def value_to_redis(field, value):
 def redis_to_value(field, redis_value):
     if isinstance(field, typesystem.Boolean):
         return redis_to_boolean(redis_value)
-    
+
     if isinstance(field, typesystem.Reference):
         return field.target.from_redis(redis_value)
 
@@ -59,7 +59,6 @@ class BaseSchema(typesystem.Schema):
             if value is not None
         }
 
-
 class Settings(BaseSchema):
     enforce_https = typesystem.Boolean(default=False)
     mode = typesystem.Choice(
@@ -73,12 +72,19 @@ class Settings(BaseSchema):
     key_path = typesystem.String(allow_null=True)
 
 
+class UpstreamHeaders(BaseSchema):
+    cookie = typesystem.String(allow_null=True)
+
+
 class Route(BaseSchema):
     DEFAULT_SETTINGS = dict(Settings.validate({}))
+    DEFAULT_UPSTREAM_HEADERS = dict(UpstreamHeaders.validate({}))
 
     source = typesystem.String()
     target = typesystem.String()
     settings = typesystem.Reference(Settings, default=DEFAULT_SETTINGS)
+    upstream_headers = typesystem.Reference(UpstreamHeaders, default=DEFAULT_UPSTREAM_HEADERS)
+    ttl = typesystem.Integer(minimum=0, default=0)
 
     @classmethod
     def validate(cls, data):
