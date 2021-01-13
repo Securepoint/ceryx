@@ -1,0 +1,11 @@
+Package: ceryx
+Source: ceryx-api
+Version: 0.7.0-5-gd360b8f
+Architecture: amd64
+Maintainer: Erik Anders, Securepoint GmbH <erik.anders@securepoint.de>
+Installed-Size: 9
+Depends: adduser, python3, python3-pip
+Section: unknown
+Priority: optional
+Homepage: https://github.com/Securepoint/ceryx
+Description: ceryx api

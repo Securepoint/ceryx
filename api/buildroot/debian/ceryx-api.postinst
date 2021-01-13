@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        # add commands that must be executed after install here
+        adduser --system --disabled-password --disabled-login --home /opt/ceryx-api \
+                --no-create-home --quiet --force-badname --group ceryx
+        chown -R ceryx: /opt/ceryx-api
+        (cd /opt/ceryx-api; pipenv install --system --dev --deploy)
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

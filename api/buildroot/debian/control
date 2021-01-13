@@ -1,0 +1,13 @@
+Source:ceryx-api
+Section: unknown
+Priority: optional
+Maintainer: Erik Anders, Securepoint GmbH <erik.anders@securepoint.de>
+Build-Depends: debhelper
+Homepage: https://github.com/Securepoint/ceryx
+Description: ceryx api
+
+Package: ceryx-api
+Architecture: amd64
+Depends: adduser, pipenv
+Homepage: https://github.com/Securepoint/ceryx
+Description: ceryx api

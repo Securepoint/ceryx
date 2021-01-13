@@ -1,0 +1,15 @@
+[Unit]
+Description=Ceryx API
+Documentation=https://github.com/Securepoint/ceryx
+Wants=network.target
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/ceryx-api/config.env
+User=ceryx
+WorkingDirectory=~
+ExecStart=/usr/bin/python3 /opt/ceryx-api/api.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
