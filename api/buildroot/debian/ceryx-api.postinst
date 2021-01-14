@@ -9,6 +9,7 @@ case "$1" in
                 --no-create-home --quiet --force-badname --group ceryx
         chown -R ceryx: /opt/ceryx-api
         (cd /opt/ceryx-api; pipenv install --system --dev --deploy)
+        chown -R ceryx: /etc/ceryx-api
         ;;
 esac
 

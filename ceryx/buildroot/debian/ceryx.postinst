@@ -4,6 +4,7 @@ set -e
 
 case "$1" in
     configure)
+        chown -R www-data: /etc/ceryx
         # add commands that must be executed after install here
         openresty -s reload
         ;;
