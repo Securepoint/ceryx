@@ -133,3 +133,7 @@ class RedisClient:
     def delete_route(self, host: str):
         self._delete_target(host)
         self._delete_settings(host)
+
+    def isHealthy(self):
+        result = self.client.ping()
+        return result == True

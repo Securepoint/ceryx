@@ -46,6 +46,22 @@ class RouteDetailView:
         client.delete_route(host)
         resp.status_code = api.status_codes.HTTP_204
 
+@api.route("/health")
+class RouteDetailView:
+    async def on_head(self, req, resp):
+        check = False
+        status = 500
+
+        try:
+            check = client.isHealthy()
+        except:
+            check = False
+
+        if check:
+            status = 200
+
+        resp.status_code = status
+
 
 if __name__ == '__main__':
     api.run(port=settings.API_BIND_PORT, address=settings.API_BIND_HOST)
