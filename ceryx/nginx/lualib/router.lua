@@ -47,6 +47,12 @@ end
 local function proxy(source, target, route)
     setUpstreamHeaders(source, target, route)
     ngx.var.target = target
+
+    local host = target:match('^%w+://([^/]+)')
+    if host then
+        ngx.var.target_host = host
+    end
+
     ngx.log(ngx.INFO, "Proxying request for " .. source .. " to " .. target .. ".")
 end
 
