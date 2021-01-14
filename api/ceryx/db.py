@@ -99,9 +99,10 @@ class RedisClient:
 
     def _set_route(self, route: schemas.Route):
         redis_data = route.to_redis()
-        self._set_target(route.source, redis_data["target"])
-        self._set_settings(route.source, redis_data["settings"])
-        self._set_upstream_headers(route.source, redis_data["upstream_headers"])
+        self._set_target(route.source, redis_data["target"], route.ttl)
+        self._set_settings(route.source, redis_data["settings"], route.ttl)
+        self._set_upstream_headers(
+            route.source, redis_data["upstream_headers"], route.ttl)
         return route
 
     def get_route(self, host):
