@@ -1,7 +1,8 @@
 local redis = require "ceryx.redis"
 local routes = require "ceryx.routes"
 local utils = require "ceryx.utils"
-
+local ck = require "resty.cookie"
+                
 local redisClient = redis:client()
 
 local host = ngx.var.host
@@ -32,6 +33,63 @@ local function setUpstreamHeaders(source, target, route)
     ngx.req.set_header("Cookie", cookie)
 end
 
+local function checkValidationCookie(source)
+    ngx.log(ngx.DEBUG, "Checking validation cookie for " .. source)
+    local validationCookieNameKey = routes.getValidationCookieNameKeyForSource(source)
+    local validationCookieValueKey = routes.getValidationCookieValueKeyForSource(source)
+
+    local cookieName, flags = cache:get(host .. ':cookie-name')
+    local cookieValue, flags = cache:get(host .. ':cookie-value')
+    local _
+
+    if cookieName == nil or cookieValue == nil then
+	ngx.log(ngx.DEBUG, "cache miss")
+        cookieName, _ = redisClient:get(validationCookieNameKey)
+        cookieValue, _ = redisClient:get(validationCookieValueKey)
+        if cookieName == ngx.null then
+	    ngx.log(ngx.DEBUG, "no cookie name in redis")
+            cookieName = false
+            cookieValue = false
+        end
+	if cookieName then
+	    ngx.log(ngx.DEBUG, "set cookie name in cache: " .. cookieName)
+        end
+        cache:set(host .. ':cookie-name', cookieName, 5)
+	if cookieValue then
+	    ngx.log(ngx.DEBUG, "set cookie value in cache: " .. cookieValue)
+	end
+        cache:set(host .. ':cookie-value', cookieValue, 5)
+    end
+
+    if cookieName == false then
+	ngx.log(ngx.DEBUG, "validation cookie not required")
+        return
+    end
+    ngx.log(ngx.DEBUG, "validation cookie required. starting validation")
+
+    local cookie, err = ck:new()
+    if not cookie then
+        ngx.log(ngx.ERR, err)
+        return
+    end
+
+    local cookieValueFromRequest, err = cookie:get(cookieName)
+    if not cookieValueFromRequest then
+        if err then
+            ngx.log(ngx.ERR, err)
+        else 
+            ngx.log(ngx.ERR, "No cookie named " .. cookieName .. " was found in the request.")
+        end
+        ngx.exit(ngx.HTTP_FORBIDDEN)
+    end
+
+    if cookieValueFromRequest ~= cookieValue then
+        ngx.log(ngx.ERR, "cookie validation failed")
+        ngx.exit(ngx.HTTP_FORBIDDEN)
+    end
+
+end
+
 local function formatTarget(target)
     target = utils.ensure_protocol(target)
     target = utils.ensure_no_trailing_slash(target)
@@ -45,6 +103,7 @@ local function redirect(source, target)
 end
 
 local function proxy(source, target, route)
+    checkValidationCookie(source)
     setUpstreamHeaders(source, target, route)
     ngx.var.target = target
 

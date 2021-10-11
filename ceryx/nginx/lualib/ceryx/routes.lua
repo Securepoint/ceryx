@@ -14,6 +14,14 @@ local function getUpstreamHeadersKeyForSource(source)
     return redis.prefix .. ":upstream-headers:" .. source
 end
 
+local function getValidationCookieNameKeyForSource(source)
+    return redis.prefix .. ":validation-cookie-name:" .. source
+end
+
+local function getValidationCookieValueKeyForSource(source)
+    return redis.prefix .. ":validation-cookie-value:" .. source
+end
+
 local function targetIsInValid(target)
     return not target or target == ngx.null
 end
@@ -86,5 +94,7 @@ exports.getSettingsKeyForSource = getSettingsKeyForSource
 exports.getUpstreamHeadersKeyForSource = getUpstreamHeadersKeyForSource
 exports.getRouteForSource = getRouteForSource
 exports.getTargetForSource = getTargetForSource
+exports.getValidationCookieNameKeyForSource = getValidationCookieNameKeyForSource
+exports.getValidationCookieValueKeyForSource = getValidationCookieValueKeyForSource
 
 return exports

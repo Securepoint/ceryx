@@ -1,3 +1,15 @@
+ceryx (0.7.8) buster; urgency=medium
+
+  * build
+
+ -- Vagrant Default User <vagrant@buster>  Mon, 11 Oct 2021 16:44:10 +0000
+
+ceryx (0.7.7) buster; urgency=medium
+
+  * build
+
+ -- Vagrant Default User <vagrant@buster>  Mon, 11 Oct 2021 15:09:32 +0000
+
 ceryx (0.7.6) buster; urgency=medium
 
   * build

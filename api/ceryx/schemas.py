@@ -85,6 +85,8 @@ class Route(BaseSchema):
     settings = typesystem.Reference(Settings, default=DEFAULT_SETTINGS)
     upstream_headers = typesystem.Reference(UpstreamHeaders, default=DEFAULT_UPSTREAM_HEADERS)
     ttl = typesystem.Integer(minimum=0, default=0)
+    validation_cookie_name = typesystem.String(allow_null=True)
+    validation_cookie_value = typesystem.String(allow_null=True)
 
     @classmethod
     def validate(cls, data):

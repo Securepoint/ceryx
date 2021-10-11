@@ -41,6 +41,12 @@ class RedisClient:
     def _upstream_headers_key(self, source):
         return self._prefixed_key(f"upstream-headers:{source}")
 
+    def _validation_cookie_name_key(self, source):
+        return self._prefixed_key(f"validation-cookie-name:{source}")
+
+    def _validation_cookie_value_key(self, source):
+        return self._prefixed_key(f"validation-cookie-value:{source}")
+
     def _delete_target(self, host):
         key = self._route_key(host)
         self.client.delete(key)
@@ -51,6 +57,13 @@ class RedisClient:
 
     def _delete_upstream_headers(self, host):
         key = self._upstream_headers_key(host)
+        self.client.delete(key)
+
+    def _delete_validation_cookie(self, host):
+        key = self._validation_cookie_name_key(host)
+        self.client.delete(key)
+
+        key = self._validation_cookie_value_key(host)
         self.client.delete(key)
 
     def _lookup_target(self, host, raise_exception=False):
@@ -69,6 +82,14 @@ class RedisClient:
     def _lookup_upstream_headers(self, host):
         key = self._upstream_headers_key(host)
         return self.client.hgetall(key) or []
+
+    def _lookup_validation_cookie_name(self, host):
+        key = self._validation_cookie_name_key(host)
+        return self.client.get(key)
+
+    def _lookup_validation_cookie_value(self, host):
+        key = self._validation_cookie_value_key(host)
+        return self.client.get(key)
 
     def lookup_hosts(self, pattern="*"):
         lookup_pattern = self._route_key(pattern)
@@ -97,23 +118,46 @@ class RedisClient:
         if (ttl):
             self.client.expire(key, ttl)
 
+    def _set_validation_cookie(self, host, name, value, ttl = 0):
+        if (not len(name) or not len(value)):
+            return
+
+        key = self._validation_cookie_name_key(host)
+        self.client.set(key, name)
+        if (ttl):
+            self.client.expire(key, ttl)
+
+        key = self._validation_cookie_value_key(host)
+        self.client.set(key, value)
+        if (ttl):
+            self.client.expire(key, ttl)
+
     def _set_route(self, route: schemas.Route):
         redis_data = route.to_redis()
         self._set_target(route.source, redis_data["target"], route.ttl)
         self._set_settings(route.source, redis_data["settings"], route.ttl)
         self._set_upstream_headers(
             route.source, redis_data["upstream_headers"], route.ttl)
+
+        if ("validation_cookie_name" in redis_data and "validation_cookie_value" in redis_data):
+            self._set_validation_cookie(
+                route.source, redis_data["validation_cookie_name"], redis_data["validation_cookie_value"], route.ttl)
         return route
 
     def get_route(self, host):
         target = self._lookup_target(host, raise_exception=True)
         settings = self._lookup_settings(host)
         upstream_headers = self._lookup_upstream_headers(host)
+        validation_cookie_name = self._lookup_validation_cookie_name(host)
+        validation_cookie_value = self._lookup_validation_cookie_value(host)
+
         route = schemas.Route.from_redis({
             "source": host,
             "target": target,
             "settings": settings,
-            "upstream_headers": upstream_headers
+            "upstream_headers": upstream_headers,
+            "validation_cookie_name": validation_cookie_name,
+            "validation_cookie_value": validation_cookie_value
         })
         return route
 
