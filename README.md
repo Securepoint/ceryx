@@ -98,55 +98,7 @@ docker-compose exec api bin/populate-api
 
 ## The Ceryx API
 
-### Add a new route to Ceryx
-
-```
-curl -H "Content-Type: application/json" \
-     -X POST \
-     -d '{"source":"publicly.accessible.domain","target":"http://service.internal:8000"}' \
-     http://ceryx-api-host/api/routes
-```
-
-### Update a route in Ceryx
-
-```
-curl -H "Content-Type: application/json" \
-     -X PUT \
-     -d '{"source":"publicly.accessible.domain","target":"http://another-service.internal:8000"}' \
-     http://ceryx-api-host/api/routes/publicly.accessible.domain
-```
-
-### Delete a route from Ceryx
-
-```
-curl -H "Content-Type: application/json" \
-     -X DELETE \
-     http://ceryx-api-host/api/routes/publicly.accessible.domain
-```
-
-### Enforce HTTPS
-
-You can enforce redirection from HTTP to HTTPS for any host you would like.
-
-```
-curl -H "Content-Type: application/json" \
-     -X POST \
-     -d '{"source":"publicly.accessible.domain","target":"http://service.internal:8000", "settings": {"enforce_https": true}}' \
-     http://ceryx-api-host/api/routes
-```
-
-The above functionality works in `PUT` update requests as well.
-
-### Redirect to target, instead of proxying
-
-Instead of proxying the request to the targetm you can prompt the client to redirect the request there itself.
-
-```
-curl -H "Content-Type: application/json" \
-     -X POST \
-     -d '{"source":"sourcelair.com","target":"https://www.sourcelair.com", "settings": {"mode": "redirect"}}' \
-     http://ceryx-api-host/api/routes
-```
+see [api/README.md](api/README.md)
 
 ## Ceryx web UI
 
